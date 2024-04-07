@@ -19,6 +19,8 @@ $fs = 0.25;
 // Arbitrary shape
 grid_shape = "x.x/xxx/xxx/.x.";
 
+debug_offset = $preview ? 0.01 : 0;
+
 gridfinityBaseplate(grid_shape);
 
 
@@ -84,19 +86,19 @@ module rectangeBase(bools, x, y) {
 
         // connect to neighbours
         color("green") {
-            if (pos_x) translate([(l_grid-extension_to_neighbour)/2, 0, h_base/2]) cube([extension_to_neighbour, width, h_base+0.01], center = true);
-            if (neg_x) translate([-(l_grid-extension_to_neighbour)/2, 0, h_base/2]) cube([extension_to_neighbour, width, h_base+0.01], center = true);
-            if (pos_y) translate([0, (l_grid-extension_to_neighbour)/2, h_base/2]) cube([width, extension_to_neighbour, h_base+0.01], center = true);
-            if (neg_y) translate([0, -(l_grid-extension_to_neighbour)/2, h_base/2]) cube([width, extension_to_neighbour, h_base+0.01], center = true);
+            if (pos_x) translate([(l_grid-extension_to_neighbour)/2, 0, h_base/2]) cube([extension_to_neighbour, width, h_base+debug_offset], center = true);
+            if (neg_x) translate([-(l_grid-extension_to_neighbour)/2, 0, h_base/2]) cube([extension_to_neighbour, width, h_base+debug_offset], center = true);
+            if (pos_y) translate([0, (l_grid-extension_to_neighbour)/2, h_base/2]) cube([width, extension_to_neighbour, h_base+debug_offset], center = true);
+            if (neg_y) translate([0, -(l_grid-extension_to_neighbour)/2, h_base/2]) cube([width, extension_to_neighbour, h_base+debug_offset], center = true);
         }
 
         // connect corners
         // if(false)
         color("red") {
-            if (pos_x && pos_y && bools[x+1][y+1]) translate([(l_grid-extension_to_neighbour)/2, (l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+0.02], center = true);
-            if (pos_x && neg_y && bools[x+1][y-1]) translate([(l_grid-extension_to_neighbour)/2, -(l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+0.02], center = true);
-            if (neg_x && pos_y && bools[x-1][y+1]) translate([-(l_grid-extension_to_neighbour)/2, (l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+0.02], center = true);
-            if (neg_x && neg_y && bools[x-1][y-1]) translate([-(l_grid-extension_to_neighbour)/2, -(l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+0.02], center = true);
+            if (pos_x && pos_y && bools[x+1][y+1]) translate([(l_grid-extension_to_neighbour)/2, (l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+debug_offset*2], center = true);
+            if (pos_x && neg_y && bools[x+1][y-1]) translate([(l_grid-extension_to_neighbour)/2, -(l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+debug_offset*2], center = true);
+            if (neg_x && pos_y && bools[x-1][y+1]) translate([-(l_grid-extension_to_neighbour)/2, (l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+debug_offset*2], center = true);
+            if (neg_x && neg_y && bools[x-1][y-1]) translate([-(l_grid-extension_to_neighbour)/2, -(l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+debug_offset*2], center = true);
         }
     }
 }
