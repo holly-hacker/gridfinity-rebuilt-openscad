@@ -17,7 +17,7 @@ $fs = 0.25;
 
 /* [General Settings] */
 // Arbitrary shape
-grid_shape = "x..x/xxxx";
+grid_shape = "x.x/xxx/xxx/.x.";
 
 color("tomato")
 gridfinityBaseplate(grid_shape);
@@ -33,18 +33,26 @@ module gridfinityBaseplate(grid_shape) {
     split = split_string(grid_shape, "/");
     echo("split", split);
 
-    for (x = [0:len(split)-1]) {
+    len_x = len(split);
+    len_y = list_max([for (item = split) len(item)]);
+    echo("x", len_x, "y", len_y);
+    max_x = len_x-1;
+    max_y = len_y-1;
+
+    bools = [for (row = [0:max_x]) [for (col = [0:1:max_y]) split[row][col] == "x"]];
+    echo(split, bools);
+
+    for (x = [0:max_x]) {
         // row
         translate([x*l_grid, 0, 0])
         {
-            exploded = explode_string(split[x]);
-            echo("exploded", exploded);
-            for (y = [0:len(exploded)-1]) {
+            for (y = [0:max_y]) {
                 // column
-                echo(x, y);
                 translate([0, y*l_grid, 0])
                 {
-                    if (exploded[y] == "x")
+                    echo("position", x, y);
+
+                    if (bools[x][y])
                     difference() {
                         // rounded_rectangle(width, width, h_base, r_base);
                         rounded_rectangle(l_grid, l_grid, h_base, 0);
@@ -56,6 +64,14 @@ module gridfinityBaseplate(grid_shape) {
         }
     }
 }
+
+// TODO: turn into generic fold function?
+function list_max(list, acc = 0, index = 0) =
+    index > len(list)-1
+        ? acc
+        : index == len(list)-1
+            ? max(acc, list[index])
+            : list_max(list, max(acc, list[index]), index + 1);
 
 function explode_string(str) =
     [
@@ -80,5 +96,3 @@ function substring(input, start_index, length) =
 
 // Returns the first value if it is defined, or the second value otherwise
 function defined_or(input, or) = is_undef(input) ? or : input;
-
-echo("split test: ", split_string("hello,world,yay", ","));
