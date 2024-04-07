@@ -19,7 +19,6 @@ $fs = 0.25;
 // Arbitrary shape
 grid_shape = "x.x/xxx/xxx/.x.";
 
-color("tomato")
 gridfinityBaseplate(grid_shape);
 
 
@@ -42,25 +41,62 @@ module gridfinityBaseplate(grid_shape) {
     bools = [for (row = [0:max_x]) [for (col = [0:1:max_y]) split[row][col] == "x"]];
     echo(split, bools);
 
-    for (x = [0:max_x]) {
-        // row
+    // due to an OpenSCAD bug, we can't put this `difference` call inside these loops
+    difference() {
+        for (x = [0:max_x])
         translate([x*l_grid, 0, 0])
-        {
-            for (y = [0:max_y]) {
-                // column
-                translate([0, y*l_grid, 0])
-                {
-                    echo("position", x, y);
+        for (y = [0:max_y])
+        translate([0, y*l_grid, 0])
+        if (bools[x][y]) rectangeBase(bools, x, y);
 
-                    if (bools[x][y])
-                    difference() {
-                        // rounded_rectangle(width, width, h_base, r_base);
-                        rounded_rectangle(l_grid, l_grid, h_base, 0);
+        for (x = [0:max_x])
+        translate([x*l_grid, 0, 0])
+        for (y = [0:max_y])
+        translate([0, y*l_grid, 0])
+        if (bools[x][y]) gridfinityBase(1, 1, l_grid, 1, 1, 0, 0.5, false);
+    }
+}
 
-                        gridfinityBase(1, 1, l_grid, 1, 1, 0, 0.5, false);
-                    }
-                }
-            }
+module neighbourAwareBaseplateSection(bools, x, y) {
+    difference() {
+        rectangeBase(bools, x, y);
+        // rounded_rectangle(width, width, h_base, r_base);
+        // rounded_rectangle(l_grid, l_grid, h_base, 0);
+
+        gridfinityBase(1, 1, l_grid, 1, 1, 0, 0.5, false);
+    }
+}
+
+module rectangeBase(bools, x, y) {
+    width = l_grid-bp_xy_clearance; // TODO: fix me
+    width_no_rounding = width-r_base*2;
+    extension_to_neighbour = bp_xy_clearance+r_base;
+
+    pos_x = bools[x+1][y] == true;
+    pos_y = bools[x][y+1] == true;
+    neg_x = bools[x-1][y] == true;
+    neg_y = bools[x][y-1] == true;
+    echo("neighbours (+x, +y, -x, -y)", pos_x, pos_y, neg_x, neg_y);
+
+    union() {
+        // base rounded rectangle
+        rounded_rectangle(width, width, h_base, r_base);
+
+        // connect to neighbours
+        color("green") {
+            if (pos_x) translate([(l_grid-extension_to_neighbour)/2, 0, h_base/2]) cube([extension_to_neighbour, width, h_base+0.01], center = true);
+            if (neg_x) translate([-(l_grid-extension_to_neighbour)/2, 0, h_base/2]) cube([extension_to_neighbour, width, h_base+0.01], center = true);
+            if (pos_y) translate([0, (l_grid-extension_to_neighbour)/2, h_base/2]) cube([width, extension_to_neighbour, h_base+0.01], center = true);
+            if (neg_y) translate([0, -(l_grid-extension_to_neighbour)/2, h_base/2]) cube([width, extension_to_neighbour, h_base+0.01], center = true);
+        }
+
+        // connect corners
+        // if(false)
+        color("red") {
+            if (pos_x && pos_y && bools[x+1][y+1]) translate([(l_grid-extension_to_neighbour)/2, (l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+0.02], center = true);
+            if (pos_x && neg_y && bools[x+1][y-1]) translate([(l_grid-extension_to_neighbour)/2, -(l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+0.02], center = true);
+            if (neg_x && pos_y && bools[x-1][y+1]) translate([-(l_grid-extension_to_neighbour)/2, (l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+0.02], center = true);
+            if (neg_x && neg_y && bools[x-1][y-1]) translate([-(l_grid-extension_to_neighbour)/2, -(l_grid-extension_to_neighbour)/2, h_base/2]) cube([extension_to_neighbour, extension_to_neighbour, h_base+0.02], center = true);
         }
     }
 }
